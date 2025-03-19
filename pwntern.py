@@ -10,6 +10,7 @@ BANNER = f'''\
 pwntern [options] [charset1]? [charset2]? ... 
     -h, --help          show this banner
     -x, --hex           treat query as a hexadecimal string
+    -r, --reverse       reverse query string before searching (useful for handling endianness)
     -l, --length [int]  the length of the pattern
     -q, --query  [str]  print only the offset of [str] in the pattern
 
@@ -31,6 +32,7 @@ def parse_args():
 
     parser.add_argument('-h', '--help', action='store_true')
     parser.add_argument('-x', '--hex', action='store_true')
+    parser.add_argument('-r', '--reverse', action='store_true')
     parser.add_argument('-l', '--length', type=int, default=-1)
     parser.add_argument('-q', '--query', type=str)
     parser.add_argument('charsets', nargs='*')
@@ -82,6 +84,9 @@ def main(args) -> int:
             except ValueError as e:
                 print(f'{type(e).__str__}: {e}')
                 return 1
+
+        if args.reverse:
+            query = query[::-1]
 
         if (offset := pattern.find(query)) < 0:
             print('[!] String not found in pattern')
