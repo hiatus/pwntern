@@ -9,6 +9,7 @@ import sys
 BANNER = f'''\
 pwntern [options] [charset1]? [charset2]? ... 
     -h, --help          show this banner
+    -x, --hex           treat query as a hexadecimal string
     -l, --length [int]  the length of the pattern
     -q, --query  [str]  print only the offset of [str] in the pattern
 
@@ -29,6 +30,7 @@ def parse_args():
     parser = argparse.ArgumentParser(usage=BANNER, add_help=False)
 
     parser.add_argument('-h', '--help', action='store_true')
+    parser.add_argument('-x', '--hex', action='store_true')
     parser.add_argument('-l', '--length', type=int, default=-1)
     parser.add_argument('-q', '--query', type=str)
     parser.add_argument('charsets', nargs='*')
@@ -72,7 +74,16 @@ def main(args) -> int:
         return 1
 
     if args.query is not None:
-        if (offset := pattern.find(args.query)) < 0:
+        query = args.query
+
+        if args.hex:
+            try:
+                query = bytearray.fromhex(query).decode()
+            except ValueError as e:
+                print(f'{type(e).__str__}: {e}')
+                return 1
+
+        if (offset := pattern.find(query)) < 0:
             print('[!] String not found in pattern')
             return 1
 
